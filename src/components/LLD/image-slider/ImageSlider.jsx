@@ -1,42 +1,59 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-const images = [
-    'https://fastly.picsum.photos/id/1023/300/200.jpg?hmac=yqbis3mJN1Go0CYQeX0R9x5QW7fKISiOd2eEOT5FBYg',
-    'https://dummyimage.com/600x400/000/fff.png&text=Sample?utm_source=chatgpt.com',
-    'https://fastly.picsum.photos/id/366/300/200.jpg?hmac=J6yNuSMKlHnBrbkL9LDX7rXeppiCosUGFQE1rsDL228',
-    'https://fastly.picsum.photos/id/1059/1280/720.jpg?hmac=3aJpkBtku_zoPSq04QDo4zx56F7J3J_ESI0AQhxGaD8',
-    'https://randomuser.me/api/portraits/men/1.jpg?utm_source=chatgpt.com'
-]
+import { ARROW_ICONS, IMAGES, SLIDE_INTERVAL } from './constants';
 
 const ImageSlider = () => {
-    const [active, setActive] = useState(0);
+    const [activeIndex, setActiveIndex] = useState(0);
 
-    const handleLeft = () => {
-        setActive((active) => (active - 1) < 0 ? images.length - 1 : active - 1);
-    }
-    const handleRight = () => {
-        setActive((active) => (active + 1) % images.length);
-    }
+    const handlePrevious = useCallback(() => {
+        setActiveIndex((prevIndex) =>
+            prevIndex === 0 ? IMAGES.length - 1 : prevIndex - 1
+        );
+    }, []);
+
+    const handleNext = useCallback(() => {
+        setActiveIndex((prevIndex) => (prevIndex + 1) % IMAGES.length);
+    }, []);
 
     useEffect(() => {
-        const timer = setInterval(() => {
-          handleRight();
-        }, 2000);
+        const intervalId = setInterval(handleNext, SLIDE_INTERVAL);
 
-        return () => {
-            clearInterval(timer);
-        }
-    }, [active]);
+        return () => clearInterval(intervalId);
+    }, [handleNext]);
 
     return (
-        <div>
-            <div className="m-2 p-2 flex justify-center items-center">
-                <img onClick={handleLeft} className="w-20 h-20 cursor-pointer" src="https://cdn-icons-png.flaticon.com/512/271/271220.png" alt="left arrow"/>
-                <img className="w-200 h-100" src={images[active]} alt="wallpaper" />
-                <img onClick={handleRight} className="w-20 h-20 cursor-pointer" src="https://cdn-icons-png.flaticon.com/512/32/32213.png" alt="right arrow"/>
-            </div>
+        <div className="flex justify-center items-center gap-4 p-4">
+            <button
+                type="button"
+                onClick={handlePrevious}
+                className="cursor-pointer"
+                aria-label="Previous slide"
+            >
+                <img
+                    src={ARROW_ICONS.left}
+                    alt="Previous"
+                    className="w-10 h-10"
+                />
+            </button>
+            <img
+                src={IMAGES[activeIndex]}
+                alt={`Slide ${activeIndex + 1}`}
+                className="w-200 h-100 object-cover rounded-lg shadow-md"
+            />
+            <button
+                type="button"
+                onClick={handleNext}
+                className="cursor-pointer"
+                aria-label="Next slide"
+            >
+                <img
+                    src={ARROW_ICONS.right}
+                    alt="Next"
+                    className="w-10 h-10"
+                />
+            </button>
         </div>
-    )
-}
+    );
+};
 
 export default ImageSlider;
